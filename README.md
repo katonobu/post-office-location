@@ -1,4 +1,19 @@
 # 郵便局位置情報抽出(Japanese only)
+## 注意
+参照しているデータは、非商用、再配布禁止なため、gitコミット対象外としています。
+データ生成には別途データダウンロード等が必要です。
+### 動かすまでのデータダウンロード/修正手順
+#### P30-13.xmlの差し替え
+1. [国土数値情報（郵便局データ)](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html)を開く
+1. 全国版データである、P30-13.zipをダウンロードする。
+1. ダウンロードしたP30-13.zipを解凍して、そこに含まれるP30-13.xmlで、本ディレクトリ以下のP30-13.xmlを上書きする。
+
+#### pref_town_code.csvの差し替え
+1. [行政区域コード](https://nlftp.mlit.go.jp/ksj/gml/codelist/AdminiBoundary_CD.xlsx)をダウンロードする。
+1. 「行政区域コード」シートをutf-8 csvでpref_town_code.csvに上書き。
+1. 3行目のヘッダのセル内の改行コードを削除し1行でヘッダになるようにする。
+1. 先頭2行を削除し1行目がヘッダになるようにする。
+
 ## 参照データ出典
 - 国土数値情報（[郵便局データ](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html)）（国土交通省）（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html）（2024年5月10日取得）
   - 全国データ(P30-13.zip)中のP30-13.xmlをスクリプトから直接利用
@@ -13,7 +28,7 @@
       - そのまま抽出
 
 - [行政区域コード](https://nlftp.mlit.go.jp/ksj/gml/codelist/AdminiBoundary_CD.xlsx)
-  - 当該ファイルの「行政区域コード」シートをcsv出力し、utf-8に変換し、1行目のみがヘッダになるように修正。
+  - 当該ファイルの「行政区域コード」シートをutf-8 csv出力し、先頭2行を削除、3行目のセル内改行コードを削除し、1行目のみがヘッダになるように修正。
   - 郵便局データ中に含まれる行政区域コードをキーとしてこのデータを参照し、対応する都道府県名、市区町村名を抽出。
 
 - [国土数値情報 利用規約](https://nlftp.mlit.go.jp/ksj/other/agreement_02.html)では、

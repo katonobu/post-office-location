@@ -45,9 +45,8 @@ if __name__ == '__main__':
 
 
     # 郵便局情報のxmlファイルを読み込み、jsonに変換
-    zenkoku = "P30-13.xml"
     kanagawa = "P30-13_14.xml"
-    read_file_name = zenkoku
+    read_file_name = "P30-13.xml"
     with open(read_file_name, encoding='utf-8') as f:
         xml_str = f.read()
     master_data = xmltodict.parse(xml_str)
@@ -56,53 +55,57 @@ if __name__ == '__main__':
 #    with open(read_file_name.replace(".xml",".json"), mode="w", encoding='utf-8') as f:
 #        json.dump(master_data, f, indent=2, ensure_ascii=False)
 
+    if master_data["ksj:Dataset"]:
+        # マスタデータ前半のid-緯度経度情報を抽出しておく
+        pos_tbl = {}
+        for item in master_data["ksj:Dataset"]['gml:Point']:
+            pos_tbl.update({item["@gml:id"]:item["gml:pos"]})
 
-    # マスタデータ前半のid-緯度経度情報を抽出しておく
-    pos_tbl = {}
-    for item in master_data["ksj:Dataset"]['gml:Point']:
-        pos_tbl.update({item["@gml:id"]:item["gml:pos"]})
 
+        # マスタデータから必要な情報だけを抽出
+        results = []
+        post_offices = master_data["ksj:Dataset"]["ksj:PostOffice"]
+        print(f"{len(post_offices)} post offices is given.")
+        for item in post_offices:
+            # 名前から"郵便局"を除いて登録
+            name = item["ksj:name"].replace("郵便局","")
+            item_obj = {
+                'name':name,
+            }
 
-    # マスタデータから必要な情報だけを抽出
-    results = []
-    post_offices = master_data["ksj:Dataset"]["ksj:PostOffice"]
-    print(f"{len(post_offices)} post offices is given.")
-    for item in post_offices:
-        # 名前から"郵便局"を除いて登録
-        name = item["ksj:name"].replace("郵便局","")
-        item_obj = {
-            'name':name,
-        }
-
-        # 行政コードから、県、市をルックアップ
-        code = item["ksj:administrativeArea"]["#text"]
-        if code_to_pref_city_obj.get(code):
-            pref_city = code_to_pref_city_obj.get(code)
+            # 行政コードから、県、市をルックアップ
+            code = item["ksj:administrativeArea"]["#text"]
+            if code_to_pref_city_obj.get(code):
+                pref_city = code_to_pref_city_obj.get(code)
+                item_obj.update({
+                    'pref':pref_city["pref"],
+                    'city':pref_city["city"]
+                })
+            else:
+                print(f"Can't find code to pref/city, code:{code}, name:{name}")
             item_obj.update({
-                'pref':pref_city["pref"],
-                'city':pref_city["city"]
+                'address':item["ksj:address"],
             })
-        else:
-            print(f"Can't find code to pref/city, code:{code}, name:{name}")
-        item_obj.update({
-            'address':item["ksj:address"],
-        })
 
-        # 位置情報idから緯度経度をルックアップ
-        key = item["ksj:position"]["@xlink:href"].replace("#","")
-        if pos_tbl.get(key):
-            lat_lon_str =  pos_tbl.get(key)
-            [lat_str, lon_str] = lat_lon_str.split()
-            item_obj.update({
-                'lon':float(lon_str),
-                'lat':float(lat_str)
-            })
-        else:
-            print(f"Can't find pos, pos_id:{key}, name:{name}")
+            # 位置情報idから緯度経度をルックアップ
+            key = item["ksj:position"]["@xlink:href"].replace("#","")
+            if pos_tbl.get(key):
+                lat_lon_str =  pos_tbl.get(key)
+                [lat_str, lon_str] = lat_lon_str.split()
+                item_obj.update({
+                    'lon':float(lon_str),
+                    'lat':float(lat_str)
+                })
+            else:
+                print(f"Can't find pos, pos_id:{key}, name:{name}")
 
-        results.append(item_obj)
+            results.append(item_obj)
 
-    print(f"{len(results)} post offices is converted.")
+        print(f"{len(results)} post offices is converted.")
 
-    with open("post_office_loc.json", "w", encoding='utf-8') as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
+        with open("post_office_loc.json", "w", encoding='utf-8') as f:
+            json.dump(results, f, indent=2, ensure_ascii=False)
+    else:
+        print("You may run this script just after checkout.")
+        print('You must replace "P30-13.xml" and prepare "pref_town_code.csv".')
+        print("Detail is described in README.md")
