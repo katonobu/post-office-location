@@ -26,7 +26,7 @@
       - そのまま抽出
 
 - [行政区域コード](https://nlftp.mlit.go.jp/ksj/gml/codelist/AdminiBoundary_CD.xlsx)
-  - 当該ファイルの「行政区域コード」シートをutf-8 csv出力し、先頭2行を削除、3行目のセル内改行コードを削除し、1行目のみがヘッダになるように修正。
+  - 当該ファイルの「行政区域コード」シートをutf-8 csvでpref_town_code.csvに上書き。
   - 郵便局データ中に含まれる行政区域コードをキーとしてこのデータを参照し、対応する都道府県名、市区町村名を抽出。
 
 - [国土数値情報 利用規約](https://nlftp.mlit.go.jp/ksj/other/agreement_02.html)では、
