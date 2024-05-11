@@ -1,6 +1,7 @@
 import xmltodict
 import json
 import re
+from jsonschema import validate, ValidationError
 
 """
 [郵便局データ](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html)から
@@ -10,7 +11,7 @@ import re
   P30-13.xml 全国版データ
   pref_town_code.csvが市町村コード=>県/市変換テーブル
     [行政区域コード](https://nlftp.mlit.go.jp/ksj/gml/codelist/AdminiBoundary_CD.xlsx)
-    excelで開いてcsvで出力して、utf-8に変換したファイル
+    excelで開いてutf-8 csvで出力したファイル
 
 出力ファイル
   post_office_loc.json  
@@ -28,10 +29,10 @@ if __name__ == '__main__':
     # 市町村コード=>県/市 変換テーブルを生成
     code_to_pref_city_obj = {}
     with open("pref_town_code.csv", encoding='utf-8') as f:
-        # ヘッダ行は抜く
-        for line in f.readlines()[1:]:
-            [code_str, pref_str, city_str] = line.split(",")[:3]
-            if re.match("[0-9]*", code_str) and 0 < len(city_str):
+        for line in f.readlines():
+            splitted = line.split(",")
+            if re.match("[0-9]*", splitted[0]) and len(splitted[0]) and 3 <= len(splitted):
+                [code_str, pref_str, city_str] = splitted[:3]
                 code_to_pref_city_obj.update({
                     code_str:{
                         'pref':pref_str,
@@ -103,8 +104,21 @@ if __name__ == '__main__':
 
         print(f"{len(results)} post offices is converted.")
 
-        with open("post_office_loc.json", "w", encoding='utf-8') as f:
-            json.dump(results, f, indent=2, ensure_ascii=False)
+        # schemaの読み込み
+        with open("schema.json", encoding='utf-8') as f:
+            json_schema = json.load(f)
+
+        # json-schemaでvalidate
+        try:
+            validate(results, json_schema)
+            # validateで問題なければファイル出力
+            with open("post_office_loc.json", "w", encoding='utf-8') as f:
+                json.dump(results, f, indent=2, ensure_ascii=False)
+
+        except ValidationError as e:
+            print(e.message)
+
+
     else:
         print("You may run this script just after checkout.")
         print('You must replace "P30-13.xml" and prepare "pref_town_code.csv".')

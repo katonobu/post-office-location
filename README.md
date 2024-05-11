@@ -11,8 +11,6 @@
 #### pref_town_code.csvの差し替え
 1. [行政区域コード](https://nlftp.mlit.go.jp/ksj/gml/codelist/AdminiBoundary_CD.xlsx)をダウンロードする。
 1. 「行政区域コード」シートをutf-8 csvでpref_town_code.csvに上書き。
-1. 3行目のヘッダのセル内の改行コードを削除し1行でヘッダになるようにする。
-1. 先頭2行を削除し1行目がヘッダになるようにする。
 
 ## 参照データ出典
 - 国土数値情報（[郵便局データ](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html)）（国土交通省）（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P30.html）（2024年5月10日取得）
